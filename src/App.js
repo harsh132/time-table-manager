@@ -6,10 +6,8 @@ import "./App.css";
 import Login from "./components/login";
 import NavBar from "./components/navbar";
 import "bootstrap/dist/css/bootstrap.min.css";
-import TimeTable from './components/timetable';
+import TimeTable from "./components/timetable";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { useCollectionData } from "react-firebase-hooks/firestore";
-
 
 firebase.initializeApp({
   apiKey: "AIzaSyDWljl_Wgo6vQ18kzn6pijmb8QmmiqTOhE",
@@ -22,7 +20,7 @@ firebase.initializeApp({
 });
 
 const auth = firebase.auth();
-const firestore = firebase.firestore();
+const db = firebase.firestore();
 
 function App() {
   const [user] = useAuthState(auth);
@@ -33,22 +31,25 @@ function App() {
     const provider = new firebase.auth.GoogleAuthProvider();
     auth.signInWithPopup(provider);
   };
-  console.log(user);
+
   if (user) {
-    let username = user.email.split("@")[0];
-    let domain = user.email.split("@")[1];
-    let year=username.slice(-2);
-    if(isNaN(year))
-    {
-      if(domain==="cse.iiitp.ac.in")setBatch("cse"+year);
-      if(domain==="ece.iiitp.ac.in")setBatch("ece"+year);
+    const [username, domain] = user.email.split("@");
+    const year = username.slice(-2);
+    const branch = domain.slice(0, 3);
+    if (!isNaN(year)) {
+      if (
+        (domain === "cse.iiitp.ac.in" || domain === "ece.iiitp.ac.in") &&
+        batch !== branch + year
+      )
+        setBatch(branch + year);
     }
   }
+
   return (
     <div>
       <NavBar user={user} logout={() => auth.signOut()} />
       {user ? (
-        <TimeTable userdata={user} />
+        <TimeTable user={user} db={db} batch={batch} />
       ) : (
         <Login signInWithGoogle={signInWithGoogle} />
       )}

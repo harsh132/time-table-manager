@@ -1,4 +1,3 @@
-import React from 'react';
 import {Nav,Navbar,Button} from "react-bootstrap";
 
 const NavBar = (props) => {
